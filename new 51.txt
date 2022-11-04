@@ -1,0 +1,11 @@
+<apex:page controller="sendingMailAttachment" > 
+<apex:form >
+ <apex:messages /> 
+ <apex:outputLabel >Name</apex:outputLabel>&nbsp; &nbsp; &nbsp; 
+ <apex:inputText value="{!name}"/><br/> 
+ <apex:outputLabel >Mail</apex:outputLabel>&nbsp; &nbsp; &nbsp;&nbsp; &nbsp;
+ <apex:inputText value="{!cmail}"/><br/>
+ <apex:commandButton action="{!Submit}" value="Submit"/> 
+ </apex:form>
+ </apex:page>
+ 

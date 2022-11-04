@@ -1,0 +1,114 @@
+public boolean virtual_LessonFlow_EngageMentalHealth(String moduleName) throws Exception {
+
+		logger.info("Method: launchLessonFromCardbackAndCloseOnExit Start");
+		logger.info("Method : Start");
+		boolean bFlag = false;
+		int count =1;
+		String mainWindow = driver.getWindowHandle();
+
+		try {
+			List<WebElement> moduleList = baseHandler
+					.findElements(PropertiesRepository.getString("new-atitesting.generic.learn.cardback.loc"));
+			if (moduleList != null && moduleList.size() > 0) {
+				int size = moduleList.size();
+				for (int i = 0; i < size; i++) {
+					if (moduleList.get(i)
+							.findElement(By.cssSelector(
+									PropertiesRepository.getString("new-atitesting.generic.cardback.modulename.loc")))
+							.getText().equalsIgnoreCase(moduleName)) {
+
+						((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);",
+								moduleList.get(i).findElement(By.cssSelector(PropertiesRepository
+										.getString("new-atitesting.generic.cardback.module.lesson.button.loc"))));
+						moduleList.get(i)
+								.findElement(By.cssSelector(PropertiesRepository
+										.getString("new-atitesting.generic.cardback.module.lesson.button.loc")))
+								.click();
+						Thread.sleep(1000);
+						waitForLoad(driver);
+
+
+						try {
+							
+							WebDriverWait waitSC1 = new WebDriverWait(driver, 50);
+							waitSC1.until(ExpectedConditions
+									.visibilityOfElementLocated(By.cssSelector("#cdk-overlay-0")));
+							
+							
+							clickButtoncookie(PropertiesRepository.getString("new-atitesting.EMH.popup.start.button.loc"), 0);
+							
+							logger.info("pop up handled successfully");
+						} catch (Exception e3) {
+							logger.info("unable to close welcome popup");
+						}
+						
+						driver.switchTo().defaultContent();
+		
+
+						try {
+							Thread.sleep(10000);
+							verifyElement(PropertiesRepository.getString("new-atitesting.emh.list.virtual.app.loc"));
+							
+							((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);",
+									driver.findElement(By.cssSelector(PropertiesRepository.getString("new-atitesting.emh.list.virtual.app.loc"))));
+							clikButtonUsingJavaScript(
+									PropertiesRepository.getString("new-atitesting.emh.list.virtual.app.loc"));
+							
+							waitUntillElementIsVisible("iframe[name='childiframe']");
+							Thread.sleep(3000);
+
+							WebDriverWait waitContFrame1 = new WebDriverWait(driver, 90);
+							waitContFrame1.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt("childiframe"));
+							logger.info("switched to frame");
+						
+							waitUntillElementIsVisible("iframe[name='ImmersiveSimulationActivityFrame']");
+							Thread.sleep(2000);
+
+							WebDriverWait waitContFrame2 = new WebDriverWait(driver, 90);
+							waitContFrame2.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt("ImmersiveSimulationActivityFrame"));
+							logger.info("switched to frame");
+							
+							Thread.sleep(5000);
+							verifyElement("#progressbar-parent>img[alt='Simulation Loading Bar Fill']");
+							WebElement progressbar = baseHandler.findElement("#progressbar-parent>img[alt='Simulation Loading Bar Fill']");
+							if(progressbar.isDisplayed()) {
+								String pgbarImg = progressbar.getAttribute("alt");
+								bFlag="Simulation Loading Bar Fill".equalsIgnoreCase(pgbarImg);
+								log(logger,progressbar.getAttribute("alt")+ "is displayed");
+								
+								org.testng.Assert.assertEquals(pgbarImg, "Simulation Loading Bar Fill");
+							}else {
+								log(logger,"Simulation Progress loading bar not displayed");
+							}
+							
+							waitUntillLoadingImageIsDisappeared("#progressbar-parent>img[alt='Simulation Loading Bar Fill']");
+							waitForLoad(driver);
+							
+							
+							waitUntillElementIsVisible("#progressbar-parent>img[width='310']");
+							
+
+							driver.switchTo().defaultContent();
+
+						} catch (Exception e4) {
+							logger.info("Unable to load virtual simulation");
+						}
+
+						clikButtonUsingJavaScript(
+								PropertiesRepository.getString("new-atitesting.EMH.content.close.button.loc"));
+
+						bFlag = true;
+						break;
+					}
+				}
+			}
+		} catch (Exception e) {
+			logger.info("Unable to launchLessonFromCardbackAndCloseOnExit");
+			log(logger, "Unable to launchLessonFromCardbackAndCloseOnExit");
+			driver.switchTo().window(mainWindow);
+			throw new DriverException("Unable to launchLessonFromCardbackAndCloseOnExit", e);
+		}
+
+		logger.info("Method: launchLessonFromCardbackAndCloseOnExit End flag --> " + bFlag);
+		return bFlag;
+	}

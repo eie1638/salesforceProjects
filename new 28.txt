@@ -1,0 +1,154 @@
+public class Assement4ThirdBatch implements DataBase.Batchable <Sobject>
+{
+    public Database.QueryLocator start(Database.BatchableContext BC)
+    {
+        Set<String> customNames= new Set<String>();
+        ProductName2_mdt fetchProductName =ProductName2_mdt.getAll().Values();
+       
+        for( String  cusNames:fetchProductName.Location_based_Product_Names__c.Split(','))
+        {
+            customNames.add(cusNames);
+        }
+       
+        for( String  cusNames:fetchProductName.Non_Location_Based_Product_Names__c.Split(','))
+        {
+            customNames.add(cusNames);
+        }        
+       
+       
+       
+        String query='SELECT ID,Name,SVMXC__Product__r.Name,SVMXC_Site_c,SVMXC__Site__r.Name,SVMXC_Company_c,SVMXC__Company__r.Name,SVMXC_Statusc,Work_Order_Createdc,SVMXCSerial_Lot_Numberc FROM SVMXCInstalled_Product_c WHERE SVMXC__Product__r.Name IN: customNames AND SVMXC_Statusc= \'Operational\' AND Work_Order_Createdc IN (False,True) AND (Work_Order_Completed_Date_Timec=NUll OR Work_Order_Completed_Date_Time_c<Today)';
+        return database.getQueryLocator(query);
+        //return database.getQueryLocator('SELECT Id, SVMXC__Company__r.Name, SVMXC__Site__r.Name, SVMXC__Product__r.Name,Name,SVMXC_Serial_Lot_Numberc,SVMXCCompanyc,SVMXCSitec,Work_Order_Createdc,Work_Order_Completed_Date_Timec FROM SVMXCInstalled_Product_c Where'+
+                                        //' SVMXC_Statusc=\'Operational\' And ((Work_Order_Createdc=False And Work_Order_Completed_Date_Time_c=null)'+
+                                        //' OR (Work_Order_Created_c=true And Work_Order_Completed_Date_Time_c<Today)) And SVMXC__Product__r.Name In:customNames');
+    }
+    public void execute(Database.BatchableContext BC,List<SVMXC_Installed_Product_c> scope)
+    {
+        Map<Id,List<SVMXC_Installed_Productc>> countIPInLocation2=new Map<Id,List<SVMXCInstalled_Product_c>>();
+       
+        for(SVMXC_Installed_Product_c installedProductRecords:scope)
+        {
+            if(countIPInLocation2.containsKey(installedProductRecords.SVMXC_Site_c))
+            {
+                countIPInLocation2.get(installedProductRecords.SVMXC_Site_c).add(installedProductRecords);
+            }
+            else
+            {
+                countIPInLocation2.put(installedProductRecords.SVMXC_Sitec,new List<SVMXCInstalled_Product_c>{installedProductRecords});
+            }
+        }
+       
+        List<Case> newCaseRecordList=new List<Case>();
+        List<SVMXC_Service_Orderc> newWorkOrderRecordList=new List<SVMXCService_Order_c>();
+        List<SVMXC_Service_Order_Linec> newWorkDetailRecordList=new List<SVMXCService_Order_Line_c>();
+        List<SVMXC_Installed_Productc>  updateinstalledProductList=new List<SVMXCInstalled_Product_c>();
+       
+       
+       
+        for(ID locationId:countIPInLocation2.keySet())
+        {
+            for(SVMXC_Installed_Product_c installedProduct:countIPInLocation2.get(locationId))
+            {
+                if(countIPInLocation2.get(locationId).size()>1 || countIPInLocation2.get(locationId).size()==1 )
+                {
+                    Case newCaseRecord=new Case();
+                    newCaseRecord.AccountId=installedProduct.SVMXC_Company_c;
+                    newCaseRecord.SVMXC_Sitec=installedProduct.SVMXCSite_c;
+                    newCaseRecord.Status='New';
+                    newCaseRecord.Origin='Phone';
+                    newCaseRecordList.add(newCaseRecord);
+                   
+                    if(installedProduct.Work_Order_Created__c==False)
+                    {
+                        installedProduct.Work_Order_Created__c=true;
+                        installedProduct.Work_Order_Completed_Date_Time__c=null;
+                        updateinstalledProductList.add(installedProduct);
+                    }
+                   
+                }
+               
+            }
+        }
+       
+       
+        if(newCaseRecordList.size()>0)
+        {
+            insert newCaseRecordList;
+        }
+       
+       
+        Map<ID,ID> caseIDMap= new Map<ID,ID>();
+        For(Case caseID:newCaseRecordList)
+        {
+            caseIDMap.put(caseID.SVMXC_Site_c,caseID.Id);
+        }
+       
+       
+        for(ID locationId:countIPInLocation2.keySet())
+        {
+            for(SVMXC_Installed_Product_c installedProduct:countIPInLocation2.get(locationId))
+            {
+                if(countIPInLocation2.get(locationId).size()>1 || countIPInLocation2.get(locationId).size()==1 )
+                {
+                    SVMXC_Service_Orderc newWorkOrder=new SVMXCService_Order_c();
+                    newWorkOrder.SVMXC_Companyc=InstalledProduct.SVMXCCompany_c;
+                    newWorkOrder.SVMXC_Casec=caseIDMap.get(InstalledProduct.SVMXCSite_c);
+                    newWorkOrder.Locationc_c=InstalledProduct.SVMXCSite_c;
+                    newWorkOrder.SVMXC_Order_Status_c='New';
+                    newWorkOrder.Location_Based__c=true;
+                    newWorkOrder.Subject__c=InstalledProduct.SVMXC__Company__r.Name+'   '+InstalledProduct.SVMXC__Site__r.Name+'  '+InstalledProduct.SVMXC_Serial_Lot_Number_c;
+                    if(countIPInLocation2.get(locationId).size()==1)
+                    {
+                        newWorkOrder.Installed_Product__c=InstalledProduct.Id;
+                        newWorkOrder.Location_Based__c=false;
+                    }
+                    newWorkOrderRecordList.add(newWorkOrder);
+                }
+            }
+        }
+        if(newWorkOrderRecordList.size()>0)
+        {
+            insert newWorkOrderRecordList;
+        }
+       
+        Map<ID,ID> workOrderIdMap= new Map<ID,ID>();
+        for(SVMXC_Service_Order_c workOrderId:newWorkOrderRecordList)
+        {
+            workOrderIdMap.put(workOrderId.Locationc__c,workOrderId.ID);
+        }
+       
+       
+        for(ID locationId:countIPInLocation2.keySet())
+        {
+            for(SVMXC_Installed_Product_c installedProduct:countIPInLocation2.get(locationId))
+            {
+                if(countIPInLocation2.get(locationId).size()>1 )
+                {
+                    SVMXC_Service_Order_Linec newWorkDetail=new SVMXCService_Order_Line_c();
+                    newWorkDetail.RecordTypeId= Schema.SObjectType.SVMXC_Service_Order_Line_c.getRecordTypeInfosByName().get('Usage/Consumption').getRecordTypeId();
+                    newWorkDetail.SVMXC_Actual_Quantity2c=countIPInLocation2.get(installedProduct.SVMXCSite_c).size();
+                    newWorkDetail.SVMXC_Line_Status_c='Open';
+                    newWorkDetail.SVMXC_Service_Orderc=workOrderIdMap.get(installedProduct.SVMXCSite_c);
+                    newWorkDetail.Installed_Product__c=installedProduct.ID;
+                    newWorkDetailRecordList.add(newWorkDetail);
+                }
+            }
+        }
+       
+        if(newWorkDetailRecordList.size()>0)
+        {
+            insert newWorkDetailRecordList;
+        }
+       
+        if(updateinstalledProductList.size()>0)
+        {
+            update updateinstalledProductList;
+        }
+    }
+   
+    public void finish(Database.BatchableContext BC )
+    {
+       
+    }
+}

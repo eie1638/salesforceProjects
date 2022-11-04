@@ -1,0 +1,16 @@
+<apex:page controller="getvalueofcase"  >
+<apex:form >
+ <apex:pageBlock title="Case">
+    <apex:pageBlockSection title="case information">
+        <apex:outputText value="{!Status}" label="Status"> </apex:outputText>
+        <apex:outputText value="{!types}" label="types"> </apex:outputText>
+        <apex:outputText value="{!Origin}" label="Origin"> </apex:outputText>
+        <apex:outputText value="{!Description}" label="Description"> </apex:outputText>
+		<apex:outputText value="{!CaseNumber}" label="CaseNumber"> </apex:outputText>
+        
+     </apex:pageBlockSection>
+     
+     
+    </apex:pageBlock>
+ </apex:form>
+ </apex:page>

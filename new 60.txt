@@ -1,0 +1,19 @@
+public class getvalueofcase {
+
+		public string Id;
+		public string Status {get;set;}
+		public string Description {get;set;}
+		public string Origin {get;set;}
+		public string types {get;set;}
+	    public string CaseNumber {get;set;}
+    public getvalueofcase(){
+        Id = apexpages.currentPage().getParameters().get('Id');
+		list<Case> c = [SELECT Id, Type, Status, CaseNumber, Origin, Description FROM Case WHARE Id =:Id];
+        Status = c[0].Status;
+         Origin = c[0].Origin;
+         Description = c[0].Description;
+        types = c[0].Type;
+		CaseNumber=c[0].CaseNumber;
+        
+    }
+}

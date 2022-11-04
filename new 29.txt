@@ -1,0 +1,38 @@
+    //   Map < Id, list <Id>> locationAcc = new Map < ID, list <Id>> ();
+        
+    /*    for (Installed_Product__c Is: newList) {
+            if(locationAcc.get(Is.location__c).contains(Is.account__c)){
+                locationAcc.get(Is.location__c).add(Is.account__c);
+                continue;                                                              // multiple ip found same location on account 
+            }
+            else
+            {
+                list<Id> Acc= new List<Id>();
+                Acc.add(Is.Account__c);
+                locationAcc.put(Is.Location__c,Acc);
+              //* populate wo and case  
+              
+                    Work_Order__c newWo = new Work_Order__c();
+                      newWo.Installed_Product__c = installedProduct1.Id;
+                      newWo.Account__c=installedProduct1.Account__c;
+                      newWo.Location__c =installedProduct1.Location__c;
+                      newWo.Order_Status__c ='New';
+                     // newWo.Subject__c= newCase.Subject +''+installedProduct1.Account__r.Name+''+installedProduct1.Location__r.Name+''+installedProduct1.Serial_Lot_Number__c;
+                      ListofWorkOrder.add(newWo);
+            }
+            
+        }
+        insert ListofWorkOrder;
+        insert listOfCase;
+        
+        for (Work_Order__c WO: ListofWorkOrder){
+            if(locationAcc.get(WO.Location__c).size() > 1){
+                Work_Detail__c wd = new Work_Detail__c();                      // 1 wo manny different loc Wd
+                wd.Line_Qty__c = locationAcc.get(WO.Location__c).size();
+                // populate wd
+                
+            }
+        }
+        insert ListofWorkDetail;
+        
+		*/

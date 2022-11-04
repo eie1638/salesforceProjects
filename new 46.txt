@@ -1,0 +1,65 @@
+Sales Structure: 						Duration - 2 days
+
+Create an object called Branch Lookup, it should have the following fields:
+	- Zip(Text)
+	- Territory(Text)
+	-Selling Region(Text)
+
+Create the following field on the Lead object
+	- Type -(Picklist) - Inbound, Outbound
+Create the following field on the Opportunity object
+               - Zip(Text)
+
+Create the following Roles:
+	- Inbound Sales Specialist
+	- Inside Sales Rep
+	- Sales Manager
+
+Create the following fields on the user object:
+	- Selling Region(Text)
+	- Territory(Text)
+	- Available for Leads(checkbox)
+
+Create a Lead Queue with the name “Inbound Lead Queue”
+
+Determine the territory and selling region of the lead based on the billing zip, branch lookup table and do the following
+If the type is Outbound, change the owner of the lead based on the following criteria
+- Branch lookup Territory should match as that of the user
+- User Role should be Inside Sales Rep
+- Available for Leads - checked
+If there are no users available, assign it to the user with Sales Manager Role and matching Selling region of branch lookup.
+If the type is Inbound, change the owner of the lead based on the following criteria
+                                           - Branch lookup Territory should match as that of the user
+- User Role should be Inbound Sales Specialist
+- Available for Leads should be checked
+- Assign the leads based on the Round Robin method(Once the user is assigned lead next lead should be assigned to other user)
+- If no users are available for leads, then assign it to Inbound Lead queue
+Create a task with the following details and assign it to the same user 
+Subject - Call
+Due Date - Today + 15
+     Write a batch to process all the Opportunities with stage Proposal/Price Quote and assign the sales rep based on the billing zip and the branch lookup. 
+User Role should be Inside Sales Rep
+Territory should match with branch lookup
+Available for Leads - checked
+If there are no users available assign it to user with Sales Manager Role and matching Selling region with branch lookup
+All the tasks should also get assigned to new user
+Also send an email to the admin mentioning the following details
+-  No of Opportunities processed
+ 			 - No of Opportunities Won today 
+			- No of Opportunities Lost Today and Lost Reasons
+  This batch should run everyday at 12am
+All the classes should atleast have 75% code coverage.
+
+
+Test Scenarios:
+
+Pre Condition: Setup territory and Selling region in the branch lookup table. Fill all the Territory and Selling Region details on the Users
+Create a Lead of type “Outbound” with valid zip present in the branch lookup.
+Expected Result : Lead should get assigned to available Inside Sales Rep user who has same territory corresponding to the zip present on the lead.
+Create a Lead of type “Inbound” with valid zip present in the branch lookup.
+Expected Result : Lead should get assigned to available Inbound Sales Specialist user who has same territory corresponding to the zip present on the lead.
+Update an existing lead with different zip.
+Expected Result:  Lead should get assigned to available Inside Sales Rep user who has same territory corresponding to the zip present on the lead. All the tasks under lead should also get assigned to the same user.
+Create Opportunities with stage “Proposal/Price Quote” and valid Billing address. Run the batch.
+Expected Result: All the Opportunities should get assigned to the valid Inside Sales Rep.
+All the tasks should get assigned to the same user.
